@@ -47,9 +47,7 @@ const server = http.createServer(function(req, resp) {
     });
 });
 
-const io = socketio(server, {
-    wsEngine: 'ws'
-});
+const io = socketio(server);
 const socketServer = io;
 
 socketServer.on("connection", function(socket) {
