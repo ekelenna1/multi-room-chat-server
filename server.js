@@ -82,6 +82,16 @@ socketServer.sockets.on("connection", function(socket) {
 
         socket.join("Lobby");
     });
+
+    socket.on('sendMessage', function(data) {
+        const user = users[socket.id];
+        if (!user) return;
+
+        socketServer.to(user.currentRoom).emit("newMessage", {
+            user: user.username,
+            message: data.message
+        });
+    });
 });
 
 server.listen(3456, function() {
