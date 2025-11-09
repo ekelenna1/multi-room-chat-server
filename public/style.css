@@ -1,0 +1,40 @@
+/*To hide chat untill logged in */
+.hidden {
+    display: none !important;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+#chat-container {
+    display: flex;
+    height: 80vh;
+}
+
+#sidebar {
+    width: 250px;
+    border-right: 1px solid #ccc;
+}
+
+#main-chat {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+#messages {
+    flex: 1;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+}
+
+#message-form {
+    display: flex;
+}
+
+#message-input {
+    flex: 1;
+}

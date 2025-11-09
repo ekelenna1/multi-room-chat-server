@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 6 Chat Server Project</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div id="login-container" class="container">
+        <h1>THE Chat Server</h1>
+        <form id="login-form">
+            <input type="text" id="username-input" placeholder="Enter your nickname" required>
+            <button type="submit">Login</button>
+        </form>
+        <p id="login-error" class="error"></p>
+    </div>
+
+    <div id="chat-container" class="container hidden">
+        <div id="sidebar">
+            <div class="sidebar-section">
+                <h3>Create Room</h3>
+                <form id="create-room-form">
+                    <input type="text" id="room-name-input" placeholder="New room name" required>
+                    <input type="password" id="room-password-input" placeholder="Password (optional)">
+                    <button type="submit">Create</button>
+                </form>
+            </div>
+            <div class="sidebar-section">
+                <h3>Rooms</h3>
+                <ul id="room-list">
+                </ul>
+            </div>
+            <div class="sidebar-section">
+                <h3 id="user-list-title">Users in Lobby</h3>
+                <ul id="user-list">
+                </ul>
+            </div>
+        </div>
+
+        <div id="main-chat">
+            <div id="messages">
+            </div>
+            <form id="message-form">
+                <input type="text" id="message-input" placeholder="Type a message..." required>
+                <button type="submit">Send</button>
+            </form>
+        </div>
+    </div>
+
+</body>
+
+</html>
