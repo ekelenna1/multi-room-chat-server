@@ -47,12 +47,12 @@ const server = http.createServer(function(req, resp) {
     });
 });
 
-const io = socketio(http, {
+const io = socketio(server, {
     wsEngine: 'ws'
 });
-const socketServer = io.listen(server);
+const socketServer = io;
 
-socketServer.sockets.on("connection", function(socket) {
+socketServer.on("connection", function(socket) {
 
     socket.on('login', function(data) {
         const username = data.username.trim();
