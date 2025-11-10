@@ -64,7 +64,8 @@ function broadcastRoomList() {
     const roomListForClient = {};
     for (const roomName in rooms) {
         roomListForClient[roomName] = {
-            userCount: getUsersInRoom(roomName).length
+            userCount: getUsersInRoom(roomName).length,
+            hasPassword: !!rooms[roomName].password
         };
     }
     socketServer.sockets.emit("updateRoomList", roomListForClient);
@@ -142,7 +143,7 @@ socketServer.on("connection", function(socket) {
             message: data.message
         });
     });
-    
+
     socket.on('createRoom', function(data) {
         const roomName = data.roomName.trim();
         const password = data.password.trim() || null;
@@ -166,11 +167,17 @@ socketServer.on("connection", function(socket) {
 
     socket.on('joinRoom', function(data) {
         const roomName = data.roomName;
+        const password = data.password || null;
         const user = users[socket.id];
 
         if (!user) return;
         if (!rooms[roomName]) {
             socket.commit("roomError", "This room does not exist.");
+            return;
+        }
+
+        if (rooms[roomName].password && rooms[roomName].password !== password) {
+            socket.emit("roomError", "Incorrect password.");
             return;
         }
 

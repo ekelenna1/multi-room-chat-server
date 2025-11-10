@@ -55,13 +55,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const infoSpan = document.createElement('span');
             infoSpan.className = 'room-info';
             let infoText = `(${room.userCount}) `;
+            if (room.hasPassword) {
+                infoText += '🔒';
+            } 
             infoSpan.textContent = infoText;
             li.appendChild(infoSpan);
 
             if (roomName !== currentRoom) {
                 li.addEventListener('click', () => {
+                    let password = "";
+                    if (room.hasPassword) {
+                        password = prompt('Enter password for room "${roomName}":');
+                        if (password === null) return;
+                    }
                     socket.emit('joinRoom', {
-                        roomName: roomName
+                        roomName: roomName,
+                        password: password
                     });
                 });
             } else {
