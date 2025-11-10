@@ -100,6 +100,15 @@ function handleJoinRoom(socket, roomName) {
     broadcastRoomList();
 }
 
+function findSocketIdByUsername(roomName, username) {
+    for (const socketId in users) {
+        if (users[socketId].currentRoom === roomName && users[socketId].username === username) {
+            return socketId;
+        }
+    }
+    return null;
+}
+
 socketServer.on("connection", function(socket) {
 
     socket.on('login', function(data) {
@@ -182,6 +191,28 @@ socketServer.on("connection", function(socket) {
         }
 
         handleJoinRoom(socket, roomName);
+    });
+
+    socket.on('sendPrivateMessage', function(data) {
+        const sender = users[socket.id];
+        if (!sender) return;
+    
+        const targetSocketId = findSocketIdByUsername(sender.currentRoom, data.targetUsername);
+    
+        if (targetSocketId && targetSocketId !== socket.id) {
+            socketServer.to(targetSocketId).emit("newPrivateMessage", {
+                from: sender.username,
+                message: data.message
+            });
+            socket.emit("newPrivateMessage", {
+                to: data.targetUsername,
+                message: data.message
+            });
+        } else if (targetSocketId === socket.id) {
+            socket.emit("pmError", `You cannot send a private message to yourself.`);
+        } else {
+            socket.emit("pmError", `User "${data.targetUsername}" not found in this room.`);
+        }
     });
 
     socket.on('disconnect', function() {

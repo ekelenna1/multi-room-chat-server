@@ -31,6 +31,12 @@ document.addEventListener('DOMContentLoaded', () => {
         let content = "";
         if (type === 'public') {
             content = `<span class="username">${data.user}:</span> ${data.message}`;
+        } else if (type === 'private') {
+            if (data.from) {
+                content = `<span class="username">(PM from ${data.from}):</span> ${data.message}`;
+            } else {
+                content = `<span class="username">(PM to ${data.to}):</span> ${data.message}`;
+            }
         } else if (type === 'system') {
             content = data.message;
         }
@@ -104,11 +110,28 @@ document.addEventListener('DOMContentLoaded', () => {
         const message = messageInput.value.trim();
         if (!message) return;
 
-        socket.emit('sendMessage', {
-            message: message
-        });
+        if (message.startsWith('/pm')) {
+            const parts = message.split(' ');
+            if (parts.length >= 3) {
+                const targetUsername = parts[1];
+                const pm = parts.slice(2).join(' ');
+                socket.emit('sendPrivateMessage', {
+                    targetUsername: targetUsername,
+                    message: pm
+                });
+            } else {
+                addMessageToWindow('system', {
+                    message: "Invalid PM format. Use: /pm username message"
+                });
+            }
+        } else {
+
+            socket.emit('sendMessage', {
+                message: message
+            });
+        }
+            messageInput.value = "";
         
-        messageInput.value = "";
     });
 
     createRoomForm.addEventListener('submit', (e) => {
@@ -163,6 +186,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     socket.on('roomError', (message) => {
         alert(message);
+    });
+
+    socket.on('newPrivateMessage', (data) => {
+        addMessageToWindow('private', data);
+    });
+    
+    socket.on('pmError', (message) => {
+        addMessageToWindow('system', {
+            message: `Error: ${message}`
+        });
     });
 
 });
