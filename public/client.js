@@ -2,6 +2,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const socket = io.connect();
 
+    const typingIndicator = document.getElementById('typing-indicator');
+    let typingTimer;
+
     const loginContainer = document.getElementById('login-container');
     const loginForm = document.getElementById('login-form');
     const usernameInput = document.getElementById('username-input');
@@ -28,10 +31,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function addMessageToWindow(type, data) {
         const msgElement = document.createElement('div');
         msgElement.classList.add('message', type);
-
+    
         let content = "";
         if (type === 'public') {
             content = `<span class="username">${data.user}:</span> ${data.message}`;
+            
+            if (data.mentions && data.mentions.includes(currentUsername)) {
+                msgElement.classList.add('mention');
+            }
+    
         } else if (type === 'private') {
             if (data.from) {
                 content = `<span class="username">(PM from ${data.from}):</span> ${data.message}`;
@@ -41,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (type === 'system') {
             content = data.message;
         }
-
+    
         msgElement.innerHTML = content;
         messages.appendChild(msgElement);
         messages.scrollTop = messages.scrollHeight;
@@ -144,11 +152,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    messageInput.addEventListener('input', () => {
+        socket.emit('typing');
+        
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(() => {
+            socket.emit('stopTyping');
+        }, 2000); 
+    });
+
     messageForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const message = messageInput.value.trim();
         if (!message) return;
-
+    
         if (message.startsWith('/pm')) {
             const parts = message.split(' ');
             if (parts.length >= 3) {
@@ -164,13 +181,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         } else {
-
             socket.emit('sendMessage', {
                 message: message
             });
         }
-            messageInput.value = "";
-        
+    
+        clearTimeout(typingTimer);
+        socket.emit('stopTyping');
+            
+        messageInput.value = "";
     });
 
     createRoomForm.addEventListener('submit', (e) => {
@@ -243,6 +262,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     socket.on('banned', (roomName) => {
         alert(`You have been banned from ${roomName}.`);
+    });
+
+    socket.on('userTyping', (data) => {
+        typingIndicator.textContent = `${data.user} is typing...`;
+    });
+
+    socket.on('userStopTyping', () => {
+        typingIndicator.textContent = "";
     });
 
 });

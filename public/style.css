@@ -56,3 +56,16 @@ form {
 .admin-btn.ban {
     background-color: #dc3545;
 }
+
+#typing-indicator {
+    font-size: 0.9em;
+    font-style: italic;
+    color: #555;
+    height: 1.2em; 
+    padding: 0 10px;
+}
+
+.message.mention {
+    background-color: #fffbe6; 
+    border-left: 3px solid #ffc107;
+}

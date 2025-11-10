@@ -149,9 +149,18 @@ socketServer.on("connection", function(socket) {
         const user = users[socket.id];
         if (!user) return;
 
+        const mentions = [];
+        const roomUsers = getUsersInRoom(user.currentRoom);
+        roomUsers.forEach(username => {
+            if (data.message.includes(`@${username}`)) {
+                mentions.push(username);
+            }
+        });
+
         socketServer.to(user.currentRoom).emit("newMessage", {
             user: user.username,
-            message: data.message
+            message: data.message,
+            mentions: mentions 
         });
     });
 
@@ -269,6 +278,22 @@ socketServer.on("connection", function(socket) {
                 handleJoinRoom(targetSocket, "Lobby");
             }
         }
+    });
+
+    socket.on('typing', function() {
+        const user = users[socket.id];
+        if (!user) return;
+
+        socket.broadcast.to(user.currentRoom).emit('userTyping', {
+            user: user.username
+        });
+    });
+
+    socket.on('stopTyping', function() {
+        const user = users[socket.id];
+        if (!user) return;
+
+        socket.broadcast.to(user.currentRoom).emit('userStopTyping');
     });
 
     socket.on('disconnect', function() {
