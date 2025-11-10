@@ -6,7 +6,8 @@ Kelenna Eke-Okoro 518067 ekelenna1
 
 
 
-
+Creative Portion:
+for our creative protion we implemented a system to send @mentions to users like discord, which highlight messages for the mentioned user. Additionally, we added "[user] is typing..." which displays while acertain user is typing and dissapears if they stop typing for 2 seconds.
 
 <br><br><br><br><br><br><br><br><br>
 Rubric

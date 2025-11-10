@@ -152,6 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Typing indicator logic
     messageInput.addEventListener('input', () => {
         socket.emit('typing');
         

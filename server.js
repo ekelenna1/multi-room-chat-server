@@ -279,7 +279,7 @@ socketServer.on("connection", function(socket) {
             }
         }
     });
-
+    // Typing indicators to broadcast typing status
     socket.on('typing', function() {
         const user = users[socket.id];
         if (!user) return;
