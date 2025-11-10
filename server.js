@@ -50,6 +50,55 @@ const server = http.createServer(function(req, resp) {
 const io = socketio(server);
 const socketServer = io;
 
+function getUsersInRoom(roomName) {
+    const usersInRoom = [];
+    for (const socketId in users) {
+        if (users[socketId].currentRoom === roomName) {
+            usersInRoom.push(users[socketId].username);
+        }
+    }
+    return usersInRoom;
+}
+
+function broadcastRoomList() {
+    const roomListForClient = {};
+    for (const roomName in rooms) {
+        roomListForClient[roomName] = {
+            userCount: getUsersInRoom(roomName).length
+        };
+    }
+    socketServer.sockets.emit("updateRoomList", roomListForClient);
+}
+
+function broadcastUserList(roomName) {
+    const usersInRoom = [];
+    for (const socketId in users) {
+        if (users[socketId].currentRoom === roomName) {
+            usersInRoom.push({
+                username: users[socketId].username
+            });
+        }
+    }
+    socketServer.to(roomName).emit("updateUserList", usersInRoom);
+}
+
+function handleJoinRoom(socket, roomName) {
+    const user = users[socket.id];
+    const oldRoom = user.currentRoom;
+
+    socket.leave(oldRoom);
+
+    socket.join(roomName);
+    user.currentRoom = roomName;
+
+    socket.emit("joinSuccess", roomName);
+
+    broadcastUserList(oldRoom);
+    broadcastUserList(roomName);
+
+    broadcastRoomList();
+}
+
 socketServer.on("connection", function(socket) {
 
     socket.on('login', function(data) {
@@ -79,6 +128,9 @@ socketServer.on("connection", function(socket) {
         });
 
         socket.join("Lobby");
+
+        broadcastUserList("Lobby");
+        broadcastRoomList();
     });
 
     socket.on('sendMessage', function(data) {
@@ -89,6 +141,52 @@ socketServer.on("connection", function(socket) {
             user: user.username,
             message: data.message
         });
+    });
+    
+    socket.on('createRoom', function(data) {
+        const roomName = data.roomName.trim();
+        const password = data.password.trim() || null;
+        const user = users[socket.id];
+
+        if (!user) return;
+
+        if (rooms[roomName]) {
+            socket.emit("roomError", "A room with this name already exists.");
+            return;
+        }
+
+        rooms[roomName] = {
+            creator: socket.id,
+            password: password,
+            bannedUsers: []
+        };
+
+        handleJoinRoom(socket, roomName);
+    });
+
+    socket.on('joinRoom', function(data) {
+        const roomName = data.roomName;
+        const user = users[socket.id];
+
+        if (!user) return;
+        if (!rooms[roomName]) {
+            socket.commit("roomError", "This room does not exist.");
+            return;
+        }
+
+        handleJoinRoom(socket, roomName);
+    });
+
+    socket.on('disconnect', function() {
+        const user = users[socket.id];
+
+        if (user) {
+            const oldRoom = user.currentRoom;
+            delete users[socket.id];
+
+            broadcastUserList(oldRoom);
+            broadcastRoomList();
+        }
     });
 });
 

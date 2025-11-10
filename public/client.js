@@ -13,6 +13,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const messageForm = document.getElementById('message-form');
     const messageInput = document.getElementById('message-input');
 
+    const createRoomForm = document.getElementById('create-room-form');
+    const roomNameInput = document.getElementById('room-name-input');
+    const roomPasswordInput = document.getElementById('room-password-input');
+
+    const roomList = document.getElementById('room-list');
+    const userList = document.getElementById('user-list');
+    const userListTitle = document.getElementById('user-list-title');
+
+    let currentUsername = "";
+    let currentRoom = "Lobby";
+
     function addMessageToWindow(type, data) {
         const msgElement = document.createElement('div');
         msgElement.classList.add('message', type);
@@ -20,11 +31,53 @@ document.addEventListener('DOMContentLoaded', () => {
         let content = "";
         if (type === 'public') {
             content = `<span class="username">${data.user}:</span> ${data.message}`;
+        } else if (type === 'system') {
+            content = data.message;
         }
 
         msgElement.innerHTML = content;
         messages.appendChild(msgElement);
         messages.scrollTop = messages.scrollHeight;
+    }
+
+    function updateRoomListUI(rooms) {
+        roomList.innerHTML = "";
+        for (const roomName in rooms) {
+            const room = rooms[roomName];
+            const li = document.createElement('li');
+            li.dataset.roomName = roomName;
+
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'room-name';
+            nameSpan.textContent = roomName;
+            li.appendChild(nameSpan);
+
+            const infoSpan = document.createElement('span');
+            infoSpan.className = 'room-info';
+            let infoText = `(${room.userCount}) `;
+            infoSpan.textContent = infoText;
+            li.appendChild(infoSpan);
+
+            if (roomName !== currentRoom) {
+                li.addEventListener('click', () => {
+                    socket.emit('joinRoom', {
+                        roomName: roomName
+                    });
+                });
+            } else {
+                li.style.backgroundColor = '#e0e0e0';
+            }
+            roomList.appendChild(li);
+        }
+    }
+
+    function updateUserListUI(users) {
+        userList.innerHTML = "";
+        users.forEach(user => {
+            const li = document.createElement('li');
+            li.textContent = user.username;
+            userList.appendChild(li);
+        });
     }
 
     loginForm.addEventListener('submit', (e) => {
@@ -49,9 +102,29 @@ document.addEventListener('DOMContentLoaded', () => {
         messageInput.value = "";
     });
 
+    createRoomForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const roomName = roomNameInput.value.trim();
+        const password = roomPasswordInput.value.trim();
+        if (roomName) {
+            socket.emit('createRoom', {
+                roomName: roomName,
+                password: password
+            });
+            roomNameInput.value = "";
+            roomPasswordInput.value = "";
+        }
+    });
+    
     socket.on('loginSuccess', (data) => {
         loginContainer.classList.add('hidden');
         chatContainer.classList.remove('hidden');
+        currentUsername = data.username;
+        currentRoom = data.currentRoom;
+        userListTitle.textContent = `Users in ${currentRoom}`;
+        addMessageToWindow('system', {
+            message: `Welcome, ${currentUsername}! You are in the ${currentRoom}.`
+        });
     });
 
     socket.on('loginError', (message) => {
@@ -60,6 +133,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     socket.on('newMessage', (data) => {
         addMessageToWindow('public', data);
+    });
+
+    socket.on('updateRoomList', (rooms) => {
+        updateRoomListUI(rooms);
+    });
+
+    socket.on('updateUserList', (users) => {
+        updateUserListUI(users);
+    });
+
+    socket.on('joinSuccess', (roomName) => {
+        currentRoom = roomName;
+        userListTitle.textContent = `Users in ${currentRoom}`;
+        messages.innerHTML = "";
+        addMessageToWindow('system', {
+            message: `You have joined the room: ${roomName}`
+        });
+    });
+
+    socket.on('roomError', (message) => {
+        alert(message);
     });
 
 });
