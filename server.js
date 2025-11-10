@@ -236,7 +236,7 @@ socketServer.on("connection", function(socket) {
 
         const targetSocketId = findSocketIdByUsername(roomName, data.username);
         if (targetSocketId && targetSocketId !== socket.id) {
-            const targetSocket = socketServer.sockets.get(targetSocketId);
+            const targetSocket = socketServer.sockets.sockets.get(targetSocketId);
             if (targetSocket) {
                 targetSocket.emit("kicked", roomName);
                 handleJoinRoom(targetSocket, "Lobby");
@@ -263,7 +263,7 @@ socketServer.on("connection", function(socket) {
 
         const targetSocketId = findSocketIdByUsername(roomName, usernameToBan);
         if (targetSocketId && targetSocketId !== socket.id) {
-            const targetSocket = socketServer.sockets.get(targetSocketId);
+            const targetSocket = socketServer.sockets.sockets.get(targetSocketId);
             if (targetSocket) {
                 targetSocket.emit("banned", roomName);
                 handleJoinRoom(targetSocket, "Lobby");
