@@ -73,10 +73,13 @@ function broadcastRoomList() {
 
 function broadcastUserList(roomName) {
     const usersInRoom = [];
+    const roomCreatorSocketId = rooms[roomName] ? rooms[roomName].creator : null;
+
     for (const socketId in users) {
         if (users[socketId].currentRoom === roomName) {
             usersInRoom.push({
-                username: users[socketId].username
+                username: users[socketId].username,
+                isCreator: (socketId === roomCreatorSocketId)
             });
         }
     }
@@ -88,7 +91,6 @@ function handleJoinRoom(socket, roomName) {
     const oldRoom = user.currentRoom;
 
     socket.leave(oldRoom);
-
     socket.join(roomName);
     user.currentRoom = roomName;
 
@@ -185,6 +187,11 @@ socketServer.on("connection", function(socket) {
             return;
         }
 
+        if (rooms[roomName].bannedUsers.includes(user.username)) {
+            socket.emit("roomError", "You are banned from this room.");
+            return;
+        }
+
         if (rooms[roomName].password && rooms[roomName].password !== password) {
             socket.emit("roomError", "Incorrect password.");
             return;
@@ -212,6 +219,55 @@ socketServer.on("connection", function(socket) {
             socket.emit("pmError", `You cannot send a private message to yourself.`);
         } else {
             socket.emit("pmError", `User "${data.targetUsername}" not found in this room.`);
+        }
+    });
+
+    socket.on('kickUser', function(data) {
+        const requester = users[socket.id];
+        if (!requester) return;
+
+        const roomName = requester.currentRoom;
+        const room = rooms[roomName];
+
+        if (!room || room.creator !== socket.id) {
+            socket.emit("pmError", "You do not have permission to do that.");
+            return;
+        }
+
+        const targetSocketId = findSocketIdByUsername(roomName, data.username);
+        if (targetSocketId && targetSocketId !== socket.id) {
+            const targetSocket = socketServer.sockets.get(targetSocketId);
+            if (targetSocket) {
+                targetSocket.emit("kicked", roomName);
+                handleJoinRoom(targetSocket, "Lobby");
+            }
+        }
+    });
+
+    socket.on('banUser', function(data) {
+        const requester = users[socket.id];
+        if (!requester) return;
+
+        const roomName = requester.currentRoom;
+        const room = rooms[roomName];
+        const usernameToBan = data.username;
+
+        if (!room || room.creator !== socket.id) {
+            socket.emit("pmError", "You do not have permission to do that.");
+            return;
+        }
+
+        if (!room.bannedUsers.includes(usernameToBan)) {
+            room.bannedUsers.push(usernameToBan);
+        }
+
+        const targetSocketId = findSocketIdByUsername(roomName, usernameToBan);
+        if (targetSocketId && targetSocketId !== socket.id) {
+            const targetSocket = socketServer.sockets.get(targetSocketId);
+            if (targetSocket) {
+                targetSocket.emit("banned", roomName);
+                handleJoinRoom(targetSocket, "Lobby");
+            }
         }
     });
 

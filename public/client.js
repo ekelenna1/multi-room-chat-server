@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentUsername = "";
     let currentRoom = "Lobby";
+    letisCreator = false;
 
     function addMessageToWindow(type, data) {
         const msgElement = document.createElement('div');
@@ -88,9 +89,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateUserListUI(users) {
         userList.innerHTML = "";
+        isCreator = false;
+
+        const amCreator = users.find(user => user.username === currentUsername)?.isCreator;
+        if (amCreator) {
+            isCreator = true;
+        }
+
         users.forEach(user => {
             const li = document.createElement('li');
             li.textContent = user.username;
+
+            if (isCreator && user.username !== currentUsername) {
+                const controlsDiv = document.createElement('div');
+                controlsDiv.className = 'user-admin-controls';
+
+                const kickBtn = document.createElement('button');
+                kickBtn.textContent = 'Kick';
+                kickBtn.className = 'admin-btn kick';
+                kickBtn.dataset.username = user.username;
+                kickBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    socket.emit('kickUser', {
+                        username: e.target.dataset.username
+                    });
+                });
+
+                const banBtn = document.createElement('button');
+                banBtn.textContent = 'Ban';
+                banBtn.className = 'admin-btn ban';
+                banBtn.dataset.username = user.username;
+                banBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    socket.emit('banUser', {
+                        username: e.target.dataset.username
+                    });
+                });
+
+                controlsDiv.appendChild(kickBtn);
+                controlsDiv.appendChild(banBtn);
+                li.appendChild(controlsDiv);
+            }
             userList.appendChild(li);
         });
     }
@@ -196,6 +235,14 @@ document.addEventListener('DOMContentLoaded', () => {
         addMessageToWindow('system', {
             message: `Error: ${message}`
         });
+    });
+
+    socket.on('kicked', (roomName) => {
+        alert(`You have been kicked from ${roomName}.`);
+    });
+
+    socket.on('banned', (roomName) => {
+        alert(`You have been banned from ${roomName}.`);
     });
 
 });
