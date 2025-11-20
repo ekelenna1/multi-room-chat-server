@@ -35,30 +35,32 @@ Rubric
 
 | Earned | Possible | Requirement                                                                     | Feedback |
 |--------|----------|---------------------------------------------------------------------------------|-------------|
-| 0      | 5        | Users can create chat rooms with an arbitrary room name                         |  when visiting http://localhost:3456/, error thrown "Internal server error: could not read file"          |
-| 0      | 5        | Users can join an arbitrary room                                                |      -       |
-| 0      | 5        | Chatroom displays a list of users in the room                                   |       -      |
-| 0      | 5        | Private, password protected rooms can be created                                |        -     |
-| 0      | 3        | Creators of room can temporarily kick users from the room                       |        -     |
-| 0      | 2        | Creators of room can permanently ban users from the room                        |         -    |
-| 0      | 1        | A user's message shows their username and is sent to everyone in the room       |         -    |
-| 0      | 4        | Users can send private messages to other users in the room                      |         -    |
+| 5      | 5        | Users can create chat rooms with an arbitrary room name                         |           |
+| 5      | 5        | Users can join an arbitrary room                                                |           |
+| 5      | 5        | Chatroom displays a list of users in the room                                   |             |
+| 5      | 5        | Private, password protected rooms can be created                                |             |
+| 3      | 3        | Creators of room can temporarily kick users from the room                       |            |
+| 2      | 2        | Creators of room can permanently ban users from the room                        |            |
+| 1      | 1        | A user's message shows their username and is sent to everyone in the room       |            |
+| 0      | 4        | Users can send private messages to other users in the room                      |       can't send private messages    |
 | 2      | 2        | Code is well-formated and easy to read                                          |         2    |
-| 0      | 2        | Site passes the [HTML5 validator](https://validator.w3.org/)                    |         -    |
+| 2      | 2        | Site passes the [HTML5 validator](https://validator.w3.org/)                    |            |
 | 0.5      | 0.5      | `package.json` is included, with all dependencies needed to run the application |             |
 | 0.5      | 0.5      | `node_modules` is ignored by git using a `.gitignore` file                      |             |
-| 0      | 4        | Communicating with others and joining rooms is easy and intuitive               |             |
-| 0      | 1        | Site is visually appealing                                                      |             |
+| 4      | 4        | Communicating with others and joining rooms is easy and intuitive               |             |
+| 1      | 1        | Site is visually appealing                                                      |             |
 
 ## Creative Portion (10 possible)
 
 | Earned | Feature | Feedback |
 | ------ | ------- | -------- |
+| 5 | typing indicator | |
+|5 | mention | | 
 
 ## Grade
 | Total Earned | Total Possible |
 | ------------ | -------------- |
-| 3            | 50             |
+| 46            | 50             |
 
 
 <!-->
