@@ -22,7 +22,8 @@ This is a lightweight, event-driven chat server built with **Node.js** and **Soc
     * **Live User Lists:** The sidebar updates instantly to show who is currently in the room.
 
 
-* **Project Structure**
+
+**Project Structure**
    * **server.js:** The core Node.js application handling socket events, room logic, and file serving.
 
    * **client.js:** Frontend logic for listening to server events and updating the DOM.
