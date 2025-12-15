@@ -1,32 +1,64 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/hu2d5PMB)
-# CSE3300
-Lucas Colletti 510634 lcoll813
+# Real-Time Multi-Room Chat Application
 
-Kelenna Eke-Okoro 518067 ekelenna1
-
+### Overview
+This is a lightweight, event-driven chat server built with **Node.js** and **Socket.IO**. It enables real-time, bi-directional communication between multiple clients, featuring dynamic room creation, private messaging, and robust administrative controls for room owners.
 
 
-Creative Portion:
-for our creative protion we implemented a system to send @mentions to users like discord, which highlight messages for the mentioned user. Additionally, we added "[user] is typing..." which displays while acertain user is typing and dissapears if they stop typing for 2 seconds.
+### Technologies Used
+* **Backend:** Node.js, Socket.IO
+* **Frontend:** HTML5, CSS3, JavaScript (Client-side Socket.IO)
+* **Protocol:** WebSockets (Event-based architecture)
 
-<br><br><br><br><br><br><br><br><br>
-Rubric
+### Key Features
+* **Real-Time Communication:** Instant message delivery using WebSockets (Socket.IO) with fallback to HTTP polling.
+* **Dynamic Room Management:**
+    * Users can create public or **password-protected** private rooms.
+    * Room creators are granted admin privileges to **Kick** or **Ban** disruptive users.
+* **Advanced Messaging:**
+    * **Private Direct Messages:** Users can send confidential messages using the `/pm <username>` command.
+    * **@Mentions:** The server parses messages for `@username` tags and highlights them for the recipient.
+* **User Experience (UX) Enhancements:**
+    * **Typing Indicators:** Real-time feedback when other users are typing.
+    * **Live User Lists:** The sidebar updates instantly to show who is currently in the room.
 
-| Possible | Requirement                                                                     | 
-|----------|---------------------------------------------------------------------------------|
-| 5        | Users can create chat rooms with an arbitrary room name                         |             
-| 5        | Users can join an arbitrary room                                                |             
-| 5        | Chatroom displays a list of users in the room                                   |             
-| 5        | Private, password protected rooms can be created                                |             
-| 3        | Creators of room can temporarily kick users from the room                       |             
-| 2        | Creators of room can permanently ban users from the room                        |             
-| 1        | A user's message shows their username and is sent to everyone in the room       |             
-| 4        | Users can send private messages to other users in the room                      |             
-| 2        | Code is well-formated and easy to read                                          |             
-| 2        | Site passes the [HTML5 validator](https://validator.w3.org/)                    |             
-| 0.5      | `package.json` is included, with all dependencies needed to run the application |             
-| 0.5      | `node_modules` is ignored by git using a `.gitignore` file                      |             
-| 4        | Communicating with others and joining rooms is easy and intuitive               |             
-| 1        | Site is visually appealing                                                      |             
 
-## Creative Portion (10 possible)
+**Project Structure**
+server.js: The core Node.js application handling socket events, room logic, and file serving.
+
+client.js: Frontend logic for listening to server events and updating the DOM.
+
+style.css: Custom styling for the chat interface, including specific styles for admin controls and mentions.
+
+### How to Run:
+Clone the repository.
+
+Install dependencies:
+
+Bash
+
+npm install socket.io mime
+Start the server:
+
+Bash
+
+node server.js
+Open your browser and visit: http://localhost:3456 (Open multiple tabs to simulate different users)
+
+
+### Highlight: Private Messaging Logic
+The application handles private routing by mapping usernames to their specific Socket IDs. It also handles edge cases, such as preventing users from messaging themselves or non-existent users.
+
+```javascript
+// server.js - Handling Private Messages
+socket.on('sendPrivateMessage', function(data) {
+    const targetSocketId = findSocketIdByUsername(sender.currentRoom, data.targetUsername);
+
+    if (targetSocketId) {
+        // Emit only to the specific socket ID
+        socketServer.to(targetSocketId).emit("newPrivateMessage", {
+            from: sender.username,
+            message: data.message
+        });
+    }
+});
+
